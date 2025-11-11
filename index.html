@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>BLT Self‑Assessment — v10 (Survey)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{ --bg:#f6f8fc; --text:#0f172a; --muted:#64748b; --card:#fff; --border:#e2e8f0; }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+  .wrap{max-width:980px;margin:0 auto;padding:20px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:20px 22px;box-shadow:0 8px 30px rgba(15,23,42,.06);margin-bottom:20px}
+  h1{font-family:Montserrat,Inter,Arial;font-size:24px;margin:0 0 6px;font-weight:700;letter-spacing:.2px}
+  h2{font-family:Montserrat,Inter,Arial;font-size:20px;margin:0 0 8px}
+  .small{font-size:14px}.muted{color:var(--muted)}
+  .btn{display:inline-flex;gap:8px;align-items:center;background:linear-gradient(180deg,#3b82f6,#2563eb);color:#fff;border:none;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer;box-shadow:0 6px 14px rgba(37,99,235,.25)}
+  .btn[disabled]{background:#94a3b8;box-shadow:none;cursor:not-allowed}
+  header.brand{display:flex;align-items:center;gap:12px;margin:0 0 10px}
+  header.brand img{height:44px;width:auto;display:block}
+  header.brand .divider{flex:1;height:1px;background:var(--border);margin-left:8px}
+
+.range{width:100%;accent-color:#2563eb}.row{margin-bottom:18px}.scroll{max-height:68vh;overflow:auto;padding-right:6px}
+.border{border:1px solid var(--border);border-radius:12px;padding:12px;margin:10px 0;background:linear-gradient(180deg,#fff,#fafcff)}
+</style></head>
+<body>
+<div class="wrap">
+  <header class="brand"><img src="./logo.png" alt="App logo"/><div class="divider" aria-hidden="true"></div></header>
+  <div class="card">
+    <h1>Tenant‑Focused Self‑Assessment</h1>
+    <p class="small muted">Move each slider 1–5. Items are randomized on load. Click Submit when all are answered.</p>
+    <div style="margin-top:12px"><button id="submit" class="btn" disabled>Submit & View Results</button></div>
+  </div>
+  <div class="card scroll" id="qList"></div>
+</div>
+<script defer>
+document.addEventListener('DOMContentLoaded', function(){try{
+  var COMP=[
+    {k:"communication",l:"Communication"},
+    {k:"integrity",l:"Integrity"},
+    {k:"fairness",l:"Fairness"},
+    {k:"tenantEngagement",l:"Tenant Engagement"},
+    {k:"responsiveness",l:"Responsiveness"},
+    {k:"propertyStewardship",l:"Property Stewardship"},
+    {k:"selfManagement",l:"Self-Management"},
+    {k:"relationshipBuilding",l:"Relationship-Building"}
+  ];
+  var Q=[
+    {id:"comm_1",c:"communication",t:"I communicate expectations and responsibilities during lease signing and move-in."},
+    {id:"comm_2",c:"communication",t:"I use a friendly, professional tone in all messages."},
+    {id:"comm_3",c:"communication",t:"I respond to calls, texts, or emails within a reasonable time."},
+    {id:"comm_4",c:"communication",t:"I provide timely updates about maintenance, repairs, or policy changes."},
+    {id:"comm_5",c:"communication",t:"I check for understanding when issues affect tenants directly."},
+    {id:"int_1",c:"integrity",t:"I keep promises and follow through on commitments."},
+    {id:"int_2",c:"integrity",t:"I avoid exaggeration or concealment in advertising."},
+    {id:"int_3",c:"integrity",t:"I disclose essential facts that affect decisions or safety."},
+    {id:"int_4",c:"integrity",t:"I avoid conflicts of interest in decisions."},
+    {id:"int_5",c:"integrity",t:"I admit and correct mistakes promptly and transparently."},
+    {id:"fair_1",c:"fairness",t:"I enforce lease terms consistently across tenants."},
+    {id:"fair_2",c:"fairness",t:"I balance firmness with understanding in sensitive situations."},
+    {id:"fair_3",c:"fairness",t:"I adapt decisions to individual circumstances while maintaining compliance."},
+    {id:"fair_4",c:"fairness",t:"I document decisions objectively and transparently."},
+    {id:"fair_5",c:"fairness",t:"I continue learning about landlord-tenant law."},
+    {id:"eng_1",c:"tenantEngagement",t:"I ask for feedback on living experience or improvements."},
+    {id:"eng_2",c:"tenantEngagement",t:"I share community updates or maintenance tips."},
+    {id:"eng_3",c:"tenantEngagement",t:"I offer choices (e.g., paint color, minor upgrades) where possible."},
+    {id:"eng_4",c:"tenantEngagement",t:"I recognize tenant efforts to maintain their homes."},
+    {id:"eng_5",c:"tenantEngagement",t:"I discuss upcoming needs and renewal options proactively."},
+    {id:"resp_1",c:"responsiveness",t:"I track, prioritize, and follow up on all maintenance requests."},
+    {id:"resp_2",c:"responsiveness",t:"I provide realistic timelines and keep tenants updated."},
+    {id:"resp_3",c:"responsiveness",t:"I confirm satisfaction after work is completed."},
+    {id:"resp_4",c:"responsiveness",t:"I maintain dependable relationships with vendors and service providers."},
+    {id:"resp_5",c:"responsiveness",t:"I proactively prevent recurring maintenance issues."},
+    {id:"prop_1",c:"propertyStewardship",t:"I perform seasonal maintenance and routine inspections."},
+    {id:"prop_2",c:"propertyStewardship",t:"I keep common areas and exterior spaces clean and safe."},
+    {id:"prop_3",c:"propertyStewardship",t:"I budget responsibly for both routine and long-term improvements."},
+    {id:"prop_4",c:"propertyStewardship",t:"I prioritize energy efficiency, lighting, and safety upgrades."},
+    {id:"prop_5",c:"propertyStewardship",t:"I take initiative to prevent problems rather than react to them."},
+    {id:"self_1",c:"selfManagement",t:"I maintain accurate records of communication, payments, and maintenance."},
+    {id:"self_2",c:"selfManagement",t:"I plan ahead for repairs, vacancies, and capital expenses."},
+    {id:"self_3",c:"selfManagement",t:"I manage emotions in stressful interactions."},
+    {id:"self_4",c:"selfManagement",t:"I balance responsiveness with personal boundaries."},
+    {id:"self_5",c:"selfManagement",t:"I adapt when plans or priorities change."},
+    {id:"rel_1",c:"relationshipBuilding",t:"I greet tenants warmly and check in periodically."},
+    {id:"rel_2",c:"relationshipBuilding",t:"I listen actively and acknowledge tenant concerns."},
+    {id:"rel_3",c:"relationshipBuilding",t:"I manage conflict calmly and fairly."},
+    {id:"rel_4",c:"relationshipBuilding",t:"I honor tenant privacy and personal boundaries."},
+    {id:"rel_5",c:"relationshipBuilding",t:"I adjust communication or problem-solving approaches when appropriate."}
+  ];
+  function shuffle(a){ return a.slice().sort(function(){return Math.random()-0.5}); }
+  var A={}, T={}, R=shuffle(Q);
+  var qList=document.getElementById('qList');
+  for(var i=0;i<R.length;i++){
+    var q=R[i]; var comp=COMP.filter(function(c){return c.k===q.c})[0];
+    var d=document.createElement('div'); d.className='row border';
+    d.innerHTML='<div class="small muted">#'+(i+1)+' · '+comp.l+'</div>' +
+                '<div style="margin:6px 0 10px">'+q.t+'</div>' +
+                '<input type="range" min="1" max="5" step="1" value="'+(A[q.id]||3)+'" data-id="'+q.id+'" class="range">' +
+                '<div class="small muted">Value: <span id="val_'+q.id+'">'+(A[q.id]||"—")+'</span></div>';
+    qList.appendChild(d);
+    (function(d,q){
+      var s=d.querySelector('input[type=range]'); var id=s.getAttribute('data-id');
+      function mark(){ A[id]=+s.value; T[id]=true; document.getElementById('val_'+id).textContent=A[id];
+        document.getElementById('submit').disabled = Object.keys(T).length !== R.length; }
+      function markDefault(){ if(!T[id]) setTimeout(mark,0); }
+      s.addEventListener('input', mark); s.addEventListener('change', mark);
+      s.addEventListener('pointerdown', markDefault); s.addEventListener('keydown', markDefault); s.addEventListener('click', markDefault);
+    })(d,q);
+  }
+  document.getElementById('submit').addEventListener('click', function(){
+    if(Object.keys(T).length !== R.length) return;
+    var sums={}, counts={};
+    for(var i=0;i<R.length;i++){ var q=R[i], v=A[q.id]; if(v==null) continue;
+      sums[q.c]=(sums[q.c]||0)+v; counts[q.c]=(counts[q.c]||0)+1; }
+    var keys=["communication","integrity","fairness","tenantEngagement","responsiveness","propertyStewardship","selfManagement","relationshipBuilding"];
+    var averages={}; for(var j=0;j<keys.length;j++){ var k=keys[j]; var s=sums[k]||0, n=counts[k]||0; averages[k]=n?s/n:0; }
+    var payload={averages:averages, submittedAt:new Date().toISOString()};
+    try{ sessionStorage.setItem('app_v10_results', JSON.stringify(payload)); }catch(e){}
+    try{ localStorage.setItem('app_v10_results', JSON.stringify(payload)); }catch(e){}
+    window.location.href='./results.html';
+  });
+}catch(err){ alert('Survey error: '+err); console.error(err); }});
+</script>
+</body></html>

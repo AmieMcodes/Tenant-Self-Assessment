@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>BLT Self‑Assessment — v10 (Results)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{ --bg:#f6f8fc; --text:#0f172a; --muted:#64748b; --card:#fff; --border:#e2e8f0; }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+  .wrap{max-width:980px;margin:0 auto;padding:20px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:20px 22px;box-shadow:0 8px 30px rgba(15,23,42,.06);margin-bottom:20px}
+  h1{font-family:Montserrat,Inter,Arial;font-size:24px;margin:0 0 6px;font-weight:700;letter-spacing:.2px}
+  h2{font-family:Montserrat,Inter,Arial;font-size:20px;margin:0 0 8px}
+  .small{font-size:14px}.muted{color:var(--muted)}
+  .btn{display:inline-flex;gap:8px;align-items:center;background:linear-gradient(180deg,#3b82f6,#2563eb);color:#fff;border:none;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer;box-shadow:0 6px 14px rgba(37,99,235,.25)}
+  .btn[disabled]{background:#94a3b8;box-shadow:none;cursor:not-allowed}
+  header.brand{display:flex;align-items:center;gap:12px;margin:0 0 10px}
+  header.brand img{height:44px;width:auto;display:block}
+  header.brand .divider{flex:1;height:1px;background:var(--border);margin-left:8px}
+
+.chartStage{position:relative;width:min(820px,95%);margin:0 auto}
+.baseImg{display:block;width:100%;height:auto;filter: drop-shadow(0 4px 18px rgba(15,23,42,.12));}
+.chartOverlay{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
+.chartOverlay svg{width:100%;height:auto;display:block}
+.twoCol{display:grid;grid-template-columns:1fr;gap:18px}
+@media(min-width:900px){.twoCol{grid-template-columns:1fr 1fr}}
+.border{border:1px solid var(--border);border-radius:12px;padding:12px;margin:10px 0;background:linear-gradient(180deg,#fff,#fafcff)}
+.cta{display:flex; gap:16px; align-items:center; flex-wrap:wrap; margin-top:14px;}
+.cta .cover{width:220px;height:310px;border:1px solid #e2e8f0;border-radius:12px;background:linear-gradient(180deg,#f8fafc,#eef2f7);display:flex;align-items:center;justify-content:center;font-weight:700;color:#64748b}
+.ribbon{background:#eef2ff;border:1px solid #c7d2fe;color:#1e40af;border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:14px}
+footer.fine{font-size:12px;color:var(--muted);text-align:center;margin-top:8px}
+</style></head>
+<body>
+<div class="wrap">
+  <header class="brand"><img src="./logo.png" alt="App logo"/><div class="divider" aria-hidden="true"></div></header>
+  <div class="card">
+    <h1>Results</h1>
+    <div id="ribbon" class="ribbon" style="display:none"></div>
+    <p class="small muted">Your averages are visualized in the wheel below.</p>
+  </div>
+  <div class="card">
+    <div class="chartStage" aria-label="Assessment wheel">
+      <img src="./base.png" alt="Assessment wheel base with labeled segments" class="baseImg"/>
+      <div class="chartOverlay"><svg id="overlay" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid meet"></svg></div>
+    </div>
+    <div class="cta">
+      <div class="cover">White Paper Cover</div>
+      <div style="flex:1; min-width:260px">
+        <h3 style="margin:0 0 6px">Go Deeper with the White Paper</h3>
+        <p class="small muted" style="margin:0 0 10px">This guide expands on your results with practical next steps in each domain—Communication, Relationships, Fairness, Responsiveness, Property Stewardship, Self‑Management, and Integrity.</p>
+        <a href="#" target="_blank" rel="noopener" class="btn" aria-label="Download the white paper (PDF)">Download White Paper (PDF)</a>
+      </div>
+    </div>
+  </div>
+  <div class="card twoCol" id="textFeedback"></div>
+  <div class="card"><a class="btn" href="./index.html">Start/Retake Assessment</a></div>
+  <footer class="fine">© 2025 — BLT Assessment v10 Results</footer>
+</div>
+<script defer>
+document.addEventListener('DOMContentLoaded', function(){try{
+  var CANVAS={size:1000,cx:500,cy:500,outerR:330,pad:0.92};
+  var OFFSET={x:0,y:6};
+  var COLORS={communication:"#60a5facc",integrity:"#f4b183cc",fairness:"#f59e0bcc",tenantEngagement:"#a855f7cc",responsiveness:"#ef4444cc",propertyStewardship:"#3b82f6cc",selfManagement:"#06b6d4cc",relationshipBuilding:"#7ec66acc"};
+  var COMP_KEYS=["communication","integrity","fairness","tenantEngagement","responsiveness","propertyStewardship","selfManagement","relationshipBuilding"];
+
+  function parseQuery(){ var q={}; (location.search||"").replace(/^\?/,"").split("&").forEach(function(p){ if(!p) return; var kv=p.split("="); q[decodeURIComponent(kv[0])]=decodeURIComponent(kv[1]||""); }); return q; }
+  function readResults(){ var forceDemo = parseQuery().demo==="1"; var raw=null, data=null;
+    try{ raw=sessionStorage.getItem('app_v10_results'); }catch(e){}
+    if(!raw){ try{ raw=localStorage.getItem('app_v10_results'); }catch(e){} }
+    if(raw){ try{ data=JSON.parse(raw); }catch(e){ data=null; } }
+    if(data && !forceDemo) return {averages:data.averages||{}, mode:"saved"};
+    return {averages:{communication:4.2,relationshipBuilding:2.8,fairness:3.1,tenantEngagement:3.9,responsiveness:3.4,propertyStewardship:4.1,selfManagement:3.0,integrity:3.6}, mode:"demo"};
+  }
+  var payload=readResults(); var averages=payload.averages||{};
+  if(payload.mode==="demo"){ var rb=document.getElementById('ribbon'); rb.style.display='block'; rb.innerHTML='Preview mode: sample results shown. Complete the survey to see your personalized results.'; }
+
+  function draw(){ var svg=document.getElementById('overlay'); if(!svg) return;
+    var NS='http://www.w3.org/2000/svg'; while(svg.firstChild) svg.removeChild(svg.firstChild);
+    var cx=CANVAS.cx+OFFSET.x, cy=CANVAS.cy+OFFSET.y; var usable=CANVAS.outerR*CANVAS.pad; var slice=(Math.PI*2)/8, start=-Math.PI/2;
+    var wedges=[]; for(var i=0;i<COMP_KEYS.length;i++){ var key=COMP_KEYS[i]; var avg=Number(averages[key]||0)||0; var t=Math.max(0,Math.min(1,(avg-1)/4))*usable;
+      var a1=start+i*slice, a2=a1+slice; var p=document.createElementNS(NS,'path');
+      p.setAttribute('fill', COLORS[key]); p.setAttribute('stroke', COLORS[key].replace('cc','')); p.setAttribute('stroke-width','2');
+      svg.appendChild(p); wedges.push({el:p,a1:a1,a2:a2,target:t}); }
+    var raf = window.requestAnimationFrame || function(fn){ return setTimeout(function(){fn(Date.now());},16); };
+    var t0=(new Date()).getTime(), duration=900;
+    function ease(x){ return 1-Math.pow(1-x,3); }
+    function tick(now){ var t=Math.min(1,((new Date()).getTime()-t0)/duration), e=ease(t);
+      for(var i=0;i<wedges.length;i++){ var w=wedges[i]; var r=w.target*e;
+        var x1=cx+r*Math.cos(w.a1), y1=cy+r*Math.sin(w.a1);
+        var x2=cx+r*Math.cos(w.a2), y2=cy+r*Math.sin(w.a2);
+        var large=(w.a2-w.a1)>Math.PI?1:0;
+        var d="M "+cx+" "+cy+" L "+x1.toFixed(2)+" "+y1.toFixed(2)+" A "+r.toFixed(2)+" "+r.toFixed(2)+" 0 "+large+" 1 "+x2.toFixed(2)+" "+y2.toFixed(2)+" Z";
+        w.el.setAttribute('d', d); }
+      if(t<1) raf(tick); }
+    raf(tick);
+  }
+  draw();
+
+  var FEEDBACK={communication:{Emerging:"Start with prompt, clear updates.",Developing:"Be proactive and confirm understanding.",Proficient:"Solid cadence—anticipate needs.",Exemplary:"Model communication—mentor others."},
+    relationshipBuilding:{Emerging:"Shift from transactional to approachable.",Developing:"Keep building rapport and de‑escalating.",Proficient:"Strong trust—add structured feedback loops.",Exemplary:"You set the tone—share wins."},
+    fairness:{Emerging:"Standardize rules; document decisions.",Developing:"Maintain consistency; refresh legal knowledge.",Proficient:"Fair and transparent; explain rationale.",Exemplary:"Champion equity frameworks."},
+    tenantEngagement:{Emerging:"Ask for input and recognize participation.",Developing:"Close the loop on feedback.",Proficient:"Co‑create improvements.",Exemplary:"Build shared ownership and showcase stories."},
+    responsiveness:{Emerging:"Track and follow up reliably.",Developing:"Define SLAs and timelines.",Proficient:"Efficient systems—expand prevention.",Exemplary:"Anticipate and coach others."},
+    propertyStewardship:{Emerging:"Prioritize safety and routine upkeep.",Developing:"Budget for long‑term care.",Proficient:"Plan multi‑year upgrades.",Exemplary:"Lead on standards and pride."},
+    selfManagement:{Emerging:"Build organization and calm routines.",Developing:"Add automation and budgeting.",Proficient:"Maintain systems; quarterly reviews.",Exemplary:"Document/teach your methods."},
+    integrity:{Emerging:"Commit to honesty and follow‑through.",Developing:"Create a personal ethics code.",Proficient:"Transparent and trustworthy.",Exemplary:"Ethical leadership; mentor peers."}
+  };
+  var DOMAINS=[
+    {key:"relationships",name:"Managing Relationships",keys:["communication","relationshipBuilding","fairness","tenantEngagement"],
+     text:{Exemplary:"Your relationships build loyalty and trust.",Proficient:"Reliable communication and fairness; personalize further.",Developing:"Consistency is improving; add proactive updates.",Emerging:"Start with clarity and timeliness."}},
+    {key:"property",name:"Managing the Property",keys:["responsiveness","propertyStewardship"],
+     text:{Exemplary:"Operations are smooth and preventative.",Proficient:"Systems are reliable—keep optimizing workflows.",Developing:"Moving toward preventative routines.",Emerging:"Prioritize timely repairs and clear timelines."}},
+    {key:"self",name:"Managing Yourself",keys:["selfManagement","integrity"],
+     text:{Exemplary:"Professional and ethical leadership.",Proficient:"Organized and dependable—refine foresight.",Developing:"Consistency improving—tighten core systems.",Emerging:"Build routines and emotional steadiness."}}
+  ];
+  var DOMAIN_ACTIONS={relationships:{Emerging:["Set a response-time promise.","Monthly check-ins.","Fairness decision log."],Developing:["Proactive update templates.","Feedback after changes."],Proficient:["Quarterly feedback roundups.","Tenant-choice upgrades."],Exemplary:["Mentor peers on relationships.","Publish success stories."]},
+    property:{Emerging:["Centralize ticket tracking.","Define vendor SLAs."],Developing:["Preventative checklists.","Clear timelines to tenants."],Proficient:["Automate seasonal reminders.","Quarterly vendor reviews."],Exemplary:["Lead CI huddles.","Share preventative metrics."]},
+    self:{Emerging:["Consolidate records.","Weekly planning ritual."],Developing:["Budget/reserve tracking.","De-stress routine."],Proficient:["Quarterly system tune-ups.","Document personal SOPs."],Exemplary:["Teach your system to others.","Coach on ethics/boundaries."]}
+  };
+  function tier(avg){ return avg<=2.4 ? "Emerging" : (avg<=3.4 ? "Developing" : (avg<=4.4 ? "Proficient" : "Exemplary")); }
+
+  var container=document.getElementById('textFeedback');
+  var left=document.createElement('div'); left.innerHTML='<h3>Feedback by Competency</h3>';
+  var right=document.createElement('div'); right.innerHTML='<h3>Domain Notes</h3>';
+  var LABELS={communication:"Communication",relationshipBuilding:"Relationship‑Building",fairness:"Fairness",tenantEngagement:"Tenant Engagement",responsiveness:"Responsiveness",propertyStewardship:"Property Stewardship",selfManagement:"Self‑Management",integrity:"Integrity"};
+
+  for(var k in LABELS){ if(!Object.prototype.hasOwnProperty.call(LABELS,k)) continue;
+    var avg=Number(averages[k]||0)||0; var t=tier(avg); var copy=(FEEDBACK[k]&&FEEDBACK[k][t])||'';
+    var item=document.createElement('div'); item.className='border';
+    item.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><b>'+LABELS[k]+'</b><span class="small" style="font-weight:700">'+t+(avg?(' ('+avg.toFixed(2)+')'):'')+'</span></div><div class="small">'+copy+'</div>';
+    left.appendChild(item);
+  }
+  for(var d=0; d<DOMAINS.length; d++){ var dom=DOMAINS[d]; var vals=[]; for(var i=0;i<dom.keys.length;i++){ var v=Number(averages[dom.keys[i]]||0)||0; if(v>0) vals.push(v); }
+    var avgD=vals.length? vals.reduce(function(a,b){return a+b;},0)/vals.length : 0; var tierD=tier(avgD);
+    var actions=(DOMAIN_ACTIONS[dom.key] && DOMAIN_ACTIONS[dom.key][tierD]) || [];
+    var it=document.createElement('div'); it.className='border';
+    var list=actions.map(function(x){return '<li>'+x+'</li>';}).join('');
+    it.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><b>'+dom.name+'</b><span class="small muted">'+tierD+(avgD?(' ('+avgD.toFixed(2)+')'):'')+'</span></div><div class="small" style="margin-bottom:8px">'+dom.text[tierD]+'</div><div class="small muted" style="margin:6px 0 6px">Suggested actions:</div><ul style="margin:0 0 0 18px;padding:0">'+list+'</ul>';
+    right.appendChild(it);
+  }
+  container.appendChild(left); container.appendChild(right);
+
+}catch(err){ var rb=document.getElementById('ribbon'); if(rb){rb.style.display='block'; rb.innerHTML='Error rendering results: '+String(err);} console.error(err); }});
+</script>
+</body></html>
